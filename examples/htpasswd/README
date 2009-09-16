@@ -1,0 +1,5 @@
+htpasswd: pure python conficat example
+======================================
+
+This example demonstrates how to use a pure python cheetah template together
+with conficat.
