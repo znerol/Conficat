@@ -77,7 +77,7 @@ def applyCSVTemplates(data,tmpldir,outdir,tmplcol="template"):
   """
   loop thru all rows of every datafile in the data dictionary. if the row
   contains a "template" column a corresponding cheetah template will be called
-  with the values of the current row in the "obj" and the whole data dictionary
+  with the values of the current row in the "row" and the whole data dictionary
   as in the "data" variable.
  
   if the template has a function named outfile the generated contents will be
@@ -90,7 +90,7 @@ def applyCSVTemplates(data,tmpldir,outdir,tmplcol="template"):
 
       # load template
       # FIXME: error handling
-      namespaces=[{'obj':row,'data':data}]
+      namespaces=[{'row':row,'data':data}]
       tname=sanitizeRelativePath(row[tmplcol])
       tpath="%s.tmpl" % os.path.join(tmpldir,tname)
       if os.path.exists(tpath):
