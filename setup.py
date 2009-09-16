@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
+from TestCommand import TestCommand
 
 # patch distutils if it can't cope with the "classifiers" or
 # "download_url" keywords
@@ -26,6 +27,7 @@ setup(name='Conficat',
         'Programming Language :: Python',
       ],
       scripts=['scripts/conficat'],
-      package_dir = {'Conficat':'lib'},
+      package_dir = {'':'lib'},
       packages = ['Conficat'],
+      cmdclass = {'test': TestCommand},
 )
