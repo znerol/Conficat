@@ -12,6 +12,7 @@ import re
 from optparse import OptionParser
 from Cheetah.Template import Template
 from Cheetah.ImportHooks import install as cheetah_import_install
+from Conficat.Util import parseCSVFiles
 
 def prepareCheetahEnv(tmpldir):
   """
@@ -34,44 +35,6 @@ def sanitizeRelativePath(rpath):
     # FIXME: check for first path character on windows. drive letter?
     raise Exception("Relative path required. \"%s\" not allowed as first character" % os.path.sep)
   return p
-
-def parseCSVFiles(files):
-  """
-  loop thru csv files and build up data-hash. keys are derived from the first
-  word of the filename while the contents get stored as values.
-  """
-  data={}
-  for f in files:
-    # get rid of special characters in filename and use the result as key in
-    # the data directory. i.e. mydata.csv -> mydata:file-contents
-    fname = re.split('\W+',os.path.basename(f),1)[0]
-    if fname==None or fname=="":
-      raise Exception("Unable to derive data-key from filename %s" % f)
-
-    if data.has_key(fname):
-      raise Exception("Data-key %s derived from filename %s already exists" % \
-          fname, f)
-
-    # lead the csv file contents and build up hierarchical dict entries using
-    # by splitting keys on "."
-    data[fname]=[]
-    for row in csv.DictReader(open(f,"r")):
-      newrow=row.copy()
-      for (key,val) in row.iteritems():
-        parts = key.split(".")
-        if len(parts) == 1:
-          continue
-
-        level=newrow
-        for part in parts[0:-1]:
-          if not level.has_key(part):
-            level[part]={}
-          level=level[part]
-        level[parts[-1]]=val
-
-      data[fname].append(newrow)
-
-  return data
 
 def applyCSVTemplates(data,tmpldir,outdir,tmplcol="template"):
   """
