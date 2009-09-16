@@ -30,8 +30,9 @@ def sanitizeRelativePath(rpath):
     raise Exception("Empty relative path")
   if p[0:2]=="..":
     raise Exception("Reference to enclosing directory (..) not allowed in relative path")
-  if p[0]=="/":
-    raise Exception("Relative path required. \"/\" not allowed as first character")
+  if p[0]==os.path.sep:
+    # FIXME: check for first path character on windows. drive letter?
+    raise Exception("Relative path required. \"%s\" not allowed as first character" % os.path.sep)
   return p
 
 def parseCSVFiles(files):
@@ -88,9 +89,22 @@ def applyCSVTemplates(data,tmpldir,outdir,tmplcol="template"):
       if not row.has_key(tmplcol): continue
 
       # load template
+      # FIXME: error handling
+      namespaces=[{'obj':row,'data':data}]
       tname=sanitizeRelativePath(row[tmplcol])
       tpath="%s.tmpl" % os.path.join(tmpldir,tname)
-      tmpl=Template(file=tpath,namespaces={'obj':row,'data':data})
+      if os.path.exists(tpath):
+        # use cheetah template file
+        tmpl=Template(file=tpath,namespaces=namespaces)
+      else:
+        # try to load and execute pure python template
+        tmodname = tname.replace(os.path.sep,".")
+        tclsname = tname.rsplit(os.path.sep,1)[0]
+        try:
+          exec "from %s import %s as tcls" % (tmodname,tclsname)
+          tmpl = tcls(namespaces=namespaces)
+        except ImportError:
+          raise
 
       # check for outfile function in template
       try:
