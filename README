@@ -1,0 +1,29 @@
+Conficat
+========
+
+Generate configuration files from CSV tables and Cheetah templates.
+
+Install
+=======
+
+1. Cheetah
+Make sure the Cheetah template engine is installed properly. If you are not
+sure whether you have this package installed try the following command line.
+You will get an "ImportError" if you lack the package, otherwise the "ok!" will
+be printed in your terminal window.
+
+$ python -c 'from Cheetah.Template import Template; print "ok!"'
+
+Cheetah is available from the official website:
+http://www.cheetahtemplate.org/
+
+2. Conficat
+
+Change into the conficat directory and build it:
+
+$ python setup.py build
+
+Install conficat. Keep in mind that you need to have root privileges if you
+want to install it system wide in UNIX-like machines (Mac OS X and Linux):
+
+# python setup.py install

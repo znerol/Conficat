@@ -1,0 +1,147 @@
+#!/usr/bin/env python
+import csv
+import os
+import sys
+import re
+from optparse import OptionParser
+from Cheetah.Template import Template
+from Cheetah.ImportHooks import install as cheetah_import_install
+
+##
+# append the template directory to python path and tell cheetah to compile and
+# import referenced templates automatically.
+##
+def prepareCheetahEnv(tmpldir):
+  sys.path.extend(tmpldir)
+  cheetah_import_install()
+
+##
+# sanitize and validate relative path
+##
+def sanitizeRelativePath(rpath):
+  p = os.path.normpath(rpath)
+  if p=="":
+    raise Exception("Empty relative path")
+  if p[0:2]=="..":
+    raise Exception("Reference to enclosing directory (..) not allowed in relative path")
+  if p[0]=="/":
+    raise Exception("Relative path required. \"/\" not allowed as first character")
+  return p
+
+##
+# loop thru csv files and build up data-hash. keys are derived from the first
+# word of the filename while the contents get stored as values.
+##
+def parseCSVFiles(files):
+  data={}
+  for f in files:
+    # get rid of special characters in filename and use the result as key in
+    # the data directory. i.e. mydata.csv -> mydata:file-contents
+    fname = re.split('\W+',os.path.basename(f),1)[0]
+    if fname==None or fname=="":
+      raise Exception("Unable to derive data-key from filename %s" % f)
+
+    if data.has_key(fname):
+      raise Exception("Data-key %s derived from filename %s already exists" % \
+          fname, f)
+
+    # lead the csv file contents and build up hierarchical dict entries using
+    # by splitting keys on "."
+    data[fname]=[]
+    for row in csv.DictReader(open(f,"r")):
+      newrow=row.copy()
+      for (key,val) in row.iteritems():
+        parts = key.split(".")
+        if len(parts) == 1:
+          continue
+
+        level=newrow
+        for part in parts[0:-1]:
+          if not level.has_key(part):
+            level[part]={}
+          level=level[part]
+        level[parts[-1]]=val
+
+      data[fname].append(newrow)
+
+  return data
+
+##
+# loop thru all rows of every datafile in the data dictionary. if the row
+# contains a "template" column a corresponding cheetah template will be called
+# with the values of the current row in the "obj" and the whole data dictionary
+# as in the "data" variable.
+#
+# if the template has a function named outfile the generated contents will be
+# stored into the path returned by a call to outfile.
+##
+def applyCSVTemplates(data,tmpldir,outdir,tmplcol="template"):
+  # loop thru datafiles and look for template columns
+  for df in data.itervalues():
+    for row in df:
+      if not row.has_key(tmplcol): continue
+
+      # load template
+      tname=sanitizeRelativePath(row[tmplcol])
+      tpath="%s.tmpl" % os.path.join(tmpldir,tname)
+      tmpl=Template(file=tpath,namespaces={'obj':row,'data':data})
+
+      # check for outfile function in template
+      try:
+        oname=sanitizeRelativePath(tmpl.outfile())
+        opath=os.path.join(outdir,oname)
+      except AttributeError:
+        opath=None
+
+      # prepare path
+      if opath:
+        # create enclosing directory directory
+        odir = os.path.dirname(opath)
+        if not os.path.exists(odir):
+          os.makedirs(odir)
+
+        # backup existing file
+        if os.path.exists(opath):
+          os.rename(opath,"%s.bak" % opath)
+
+        # write stuff to file
+        fd = open(opath,"w")
+        fd.write(str(tmpl))
+        fd.close()
+      else:
+        print str(tmpl)
+
+def main():
+  usage = "usage: %prog [optons] file.csv, ..."
+  parser = OptionParser()
+  parser.add_option("-t", "--tmpl", dest="tmpldir", default="tmpl",
+                    help="search templates in DIR", metavar="DIR")
+  parser.add_option("-o", "--out", dest="outdir", default="out",
+                    help="write resulting files to DIR", metavar="DIR")
+
+  (opts, args) = parser.parse_args()
+
+  # check tmpl and out arguments
+  tmpldir=os.path.normpath(opts.tmpldir)
+  outdir=os.path.normpath(opts.outdir)
+  if outdir==tmpldir:
+    parser.error("--out and --tmpl must not be the same")
+
+  # if we have a common prefix the directories are nested unless the two
+  # directories have the same dirname.
+  cpfx=os.path.commonprefix([tmpldir,outdir])
+  if cpfx in (tmpldir, outdir) and \
+      os.path.dirname(tmpldir) != os.path.dirname(outdir):
+    parser.error("--out and --tmpl must not be nested")
+
+  # prepare cheetah 
+  prepareCheetahEnv(tmpldir=[opts.tmpldir])
+
+  # loop thru arguments (csv files) and build up data dictionary
+  data = parseCSVFiles(args)
+
+  # apply templates to rows in the csv files
+  applyCSVTemplates(data=data,tmpldir=opts.tmpldir,outdir=opts.outdir)
+
+if __name__ == "__main__":
+    main()
