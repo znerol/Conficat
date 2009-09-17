@@ -15,6 +15,9 @@ def parseCSVFiles(files,*args,**kwds):
   word of the filename while the contents get stored as values.
   """
 
+  # file parameter may not be empty
+  assert(len(files)>0)
+
   # we got a list, derive the keys for the dictionary automatically from the
   # filename.
   fdict={}

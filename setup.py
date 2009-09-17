@@ -27,7 +27,6 @@ setup(name='Conficat',
         'Programming Language :: Python',
       ],
       scripts=['scripts/conficat'],
-      package_dir = {'':'lib'},
       packages = ['Conficat'],
       cmdclass = {'test': TestCommand},
 )
