@@ -25,7 +25,6 @@ class TestCommand(Command):
           ['test', splitext(basename(t))[0]])
         )
 
-    sys.path.append("lib")
     tests = TestLoader().loadTestsFromNames(testfiles)
     t = TextTestRunner(verbosity = 1)
     t.run(tests)

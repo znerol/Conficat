@@ -14,7 +14,9 @@ def parseCSVFiles(files,*args,**kwds):
   loop thru csv files and build up data-hash. keys are derived from the first
   word of the filename while the contents get stored as values.
   """
-
+  # file parameter must be a dict or list
+  assert(isinstance(files,(dict,list)))
+  
   # file parameter may not be empty
   assert(len(files)>0)
 
@@ -34,10 +36,8 @@ def parseCSVFiles(files,*args,**kwds):
             fname, fpath)
 
       fdict[fname]=fpath
-  elif isinstance(files,dict):
-    fdict=files
   else:
-    raise Exception("Invalid argument!")
+    fdict=files
 
   data={}
   for (fname, fpath) in fdict.iteritems():
