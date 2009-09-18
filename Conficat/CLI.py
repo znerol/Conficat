@@ -62,7 +62,7 @@ Row templates:
 
     try:
       ccat=Conficat(
-          csvpaths  = args,
+          csvpaths  = args[1:],
           globtmpls = opts.gtmpl,
           rowtmpls  = opts.rtmpl,
           tmplcols  = opts.tcols,
