@@ -8,39 +8,52 @@ __version__=  '0.1'
 import csv
 import os
 import re
+from stat import *
+
+def mapfiles(files):
+  """
+  Generate a dictionary containing key-value pairs where the key is derived 
+  from the first word of the basename from the path in the value part.
+  E.g. some/file/there.txt: there -> some/file/there.txt
+  """
+  for f in files:
+    # generate key and yield key-value pair
+    key=re.split("\W+", os.path.basename(f), 1)[0]
+    yield(key,f)
+
+def collectfiles(path, extensions=None):
+  """
+  Generate a list of files from a path (file and directory) recursively. Will
+  throw OSError if a file or path is not accessible.
+  """
+  assert(isinstance(path,str))
+  assert(isinstance(extensions,(type(None),list)))
+  
+  path = os.path.normpath(path)
+  if S_ISDIR(os.stat(path)[ST_MODE]):
+    for f in os.listdir(path):
+      for p in collectfiles(os.path.join(path, f), extensions):
+        yield p
+  else:
+    if extensions == None:
+      yield path
+      return
+    try:
+      ext = path.rsplit(".",1)[1]
+      if ext in extensions:
+        yield path
+    except IndexError:
+      pass
+
 
 def parseCSVFiles(files,*args,**kwds):
   """
   loop thru csv files and build up data-hash. keys are derived from the first
   word of the filename while the contents get stored as values.
   """
-  # file parameter must be a dict or list
-  assert(isinstance(files,(dict,list)))
-  
-  # file parameter may not be empty
-  assert(len(files)>0)
-
-  # we got a list, derive the keys for the dictionary automatically from the
-  # filename.
-  fdict={}
-  if isinstance(files,list):
-    for fpath in files:
-      # get rid of special characters in filename and use the result as key in
-      # the data directory. i.e. mydata.csv -> mydata:file-contents
-      fname = re.split('\W+',os.path.basename(fpath),1)[0]
-      if fname==None or fname=="":
-        raise Exception("Unable to derive data-key from filename %s" % fpath)
-
-      if fdict.has_key(fname):
-        raise Exception("Data-key %s derived from filename %s already exists" % \
-            fname, fpath)
-
-      fdict[fname]=fpath
-  else:
-    fdict=files
 
   data={}
-  for (fname, fpath) in fdict.iteritems():
+  for (fname, fpath) in files.iteritems():
     # read the csv file contents and build up hierarchical dict entries by
     # splitting keys on "." and assigning values as nested entries
     data[fname]=[]
