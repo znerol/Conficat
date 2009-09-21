@@ -8,7 +8,9 @@ __version__=  '0.1'
 import os
 from stat import *
 from optparse import OptionParser, OptionGroup
-from Conficat import Conficat, ConfigurationError
+from Config import Config
+from ConfigError import ConfigError
+from Conficat import Conficat
 
 class CLI(object):
   def parse(cls,argv):
@@ -60,31 +62,38 @@ Row templates:
     if len(opts.tcols) == 0:
       opts.tcols.append("template")
     
-    # split out arguments with key= prefix
-    csvpaths = []
-    csvmap = {}
-    for arg in args[1:]:
-      try:
-        (key,path)=arg.split("=",1)
-        Conficat.checkfilemap(csvmap, key, path)
-        csvmap[key]=path
-      except ConfigurationError,err:
-        parser.error(err)
-      except ValueError:
-        # we get here if python is unable to unpack enough elements from split
-        csvpaths.append(arg)
-
     try:
-      ccat=Conficat(
-          csvpaths  = csvpaths,
-          csvmap    = csvmap,
-          globtmpls = opts.gtmpl,
-          rowtmpls  = opts.rtmpl,
-          tmplcols  = opts.tcols,
-          outfile   = opts.outfile,
-          outdir    = opts.outdir
-      )
-    except ConfigurationError,err:
+      config=Config()
+
+      # handle command line arguments
+      # split out arguments with key= prefix
+      for arg in args[1:]:
+        try:
+          (key,path)=arg.split("=",1)
+          config.addCSVPath(path,key)
+        except ValueError:
+          # we get here if python is unable to unpack enough elements from
+          # split, which means we have to figure out the key ourselves and
+          # recurse into subdirectories
+          config.addCSVPath(arg)
+
+      # handle options
+      for path in opts.gtmpl:
+        config.addGlobalTemplatePath(path)
+
+      for path in opts.gtmpl:
+        config.addRowTemplatePath(path)
+
+      config.setTemplateColumns(opts.tcols)
+      config.setOutputFile(opts.outfile)
+      if opts.outdir:
+        config.setOutputDir(opts.outdir)
+
+      # check configuration
+      config.validate()
+
+      ccat=Conficat(config)
+    except ConfigError,err:
       parser.error(err)
 
     return ccat

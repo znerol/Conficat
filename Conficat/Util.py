@@ -18,8 +18,8 @@ def mapfiles(files):
   """
   for f in files:
     # generate key and yield key-value pair
-    key=re.split("\W+", os.path.basename(f), 1)[0]
-    yield(key,f)
+    (base, ext) = os.path.basename(f).split(".")
+    yield(f, base, ext)
 
 def collectfiles(path, extensions=None):
   """
@@ -45,23 +45,64 @@ def collectfiles(path, extensions=None):
     except IndexError:
       pass
 
-
-def parseCSVFiles(files,*args,**kwds):
+def findfiles(path, testfunc=None, recurse=True):
   """
-  loop thru csv files and build up data-hash. keys are derived from the first
-  word of the filename while the contents get stored as values.
+  recurse thru directories until the optional depth.
   """
+  assert(isinstance(path,str))
+  assert(callable(testfunc))
+  
+  path=os.path.normpath(path)
+  if S_ISDIR(os.stat(path)[ST_MODE]):
+    if recurse == 0:
+      return
+    if not isinstance(recurse,bool):
+      recurse=recurse-1
+    for f in os.listdir(path):
+      for p in findfiles(os.path.join(path, f), testfunc, recurse):
+        yield p
+  elif testfunc==None or testfunc(path):
+    yield path
 
-  data={}
-  for (fname, fpath) in files.iteritems():
-    # read the csv file contents and build up hierarchical dict entries by
-    # splitting keys on "." and assigning values as nested entries
-    data[fname]=[]
-    for row in csv.DictReader(open(fpath,"rb"),*args,**kwds):
-      newrow=row.copy()
+def pathexplode(path):
+  """
+  split file path into components.
+  """
+  # remove leading dots and slashes
+  base = path.lstrip("/.",)
+  # split basename into base ext. This will throw a ValueError if the file
+  # does not have an extension or there is more than one dot
+  (base, ext) = base.split(".")
+  return base.split(os.path.sep) + [ext]
+
+def loadCSVPath(path,data,strip=0,prefix=[],*args,**kwds):
+  """
+  Load CSV data from the path which is either a file or a whole directory.
+  """
+  assert(path,str)
+  assert(data,dict)
+  assert(prefix,list)
+  assert(strip,int)
+
+  csvext=(lambda p: os.path.basename(p).split(".")[-1].lower() in ("csv",))
+  for f in findfiles(path,csvext):
+    components=prefix+pathexplode(f)[strip:-1]
+    leaf=data
+
+    # descend to leaf
+    for c in components[0:-1]:
+      if not leaf.has_key(c):
+        leaf[c]={}
+      leaf=leaf[c]
+
+    # copy rows
+    leaf[components[-1]]=[]
+    for row in csv.DictReader(open(f,"rb"),*args,**kwds):
+      newrow={}
       for (key,val) in row.iteritems():
         parts = key.split(".")
         if len(parts) == 1:
+          newrow[key]=val
           continue
 
         level=newrow
@@ -71,6 +112,4 @@ def parseCSVFiles(files,*args,**kwds):
           level=level[part]
         level[parts[-1]]=val
 
-      data[fname].append(newrow)
-
-  return data
+      leaf[components[-1]].append(newrow)

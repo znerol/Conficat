@@ -10,7 +10,6 @@ import sys
 import re
 from Cheetah.Template import Template
 from Cheetah.ImportHooks import install as cheetah_import_install
-from Conficat.Util import parseCSVFiles
 from Conficat.CLI import CLI
 
 def prepareCheetahEnv(tmpldir):
