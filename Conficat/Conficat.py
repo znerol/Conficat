@@ -6,7 +6,9 @@ __author__ =  'Lorenz Schori'
 __version__=  '0.1'
 
 from stat import *
+from Util import parseCSVFiles, collectfiles, mapfiles
 import os
+import re
 
 class ConfigurationError(StandardError):
   pass
@@ -14,57 +16,60 @@ class ConfigurationError(StandardError):
 class Conficat(object):
   """Conficat main class. Refer to CLI.py for an example"""
 
-  def __checkpath(self, path):
-    try:
-      mode = os.stat(path)[ST_MODE]
-    except OSError,(errno,errmsg):
-      raise ConfigurationError("Failed to access path %s: %s (%d)", path,
-              errmsg, errno)
-    return (S_ISDIR(mode), os.path.normpath(path))
+  def __init__(self, csvpaths=[], csvmap={}, globtmpls=[], rowtmpls=[],
+      tmplcols=[], outfile=None, outdir=None):
 
-  def __collectfiles(self, pathlist=[], extensions=[]):
-    results=[]
-    print pathlist
-    for p in pathlist:
-      (isdir, p) = self.__checkpath(p)
-      if isdir:
-        flist=[]
-        for ext in extensions:
-          flist.extend(glob.glob("%s/*.%s" % (f, ext)))
-        for f in flist:
-          (tname,ext) = os.path.basename(f).split(".")
-          globtemplates.append((f,tname,ext))
-      else:
-        (tname,ext) = os.path.basename(p).split(".")
-        globtemplates.append((f,tname,ext))
-
-  def __init__(self, csvpaths=[], globtmpls=[], rowtmpls=[], tmplcols=[],
-      outfile=None, outdir=None):
-    # check csv paths
+    # check parameters
     assert(isinstance(csvpaths,list))
-    if len(csvpaths) == 0:
+    assert(isinstance(csvmap,dict))
+    assert(isinstance(globtmpls,list))
+    assert(isinstance(rowtmpls,list))
+    assert(isinstance(tmplcols,list))
+    assert(isinstance(outfile,(type(None),str)))
+    assert(isinstance(outdir,(type(None),str)))
+
+    # we need at least one csv file ...
+    if len(csvpaths) == 0 and len(csvmap) == 0:
       raise ConfigurationError("Please specify at least one input (CSV) file")
 
-    datafiles=self.__collectfiles(csvpaths, ["csv"])
-    if len(datafiles) == 0:
-      raise ConfigurationError("No csvfiles found in specified path(s)")
-
-    # check if we have at least one template path
-    if len(globtmpls) == 0 and len(rowtmpls):
+    # ... and at least one template
+    if len(globtmpls) == 0 and len(rowtmpls) == 0:
       raise ConfigurationError("Please specify at least one template file")
 
-    # check global templates
-    # build array containing tuples ("tmpl"|"py","classname","path")
-    assert(isinstance(globtmpls,list))
-    globtemplates=self.__collectfiles(cvspaths, ["py","tmpl"])
+    # collect csv files from csvpaths and generate keys for them
+    try:
+      for p in csvpaths:
+        for (key,f) in mapfiles(collectfiles(p,["csv","CSV"])):
+          Conficat.checkfilemap(csvmap, key, path)
+          csvmap[key]=f
+    except OSError, (errno, message):
+      raise ConfigurationError("%s: %s (%d)", f, message, errno)
 
-    # check row templates
-    # build array containing tuples ("tmpl"|"py","classname","path")
-    assert(isinstance(rowtmpls,list))
-    rowtemplates=self.__collectfiles(cvspaths, ["py","tmpl"])
+    # read csv data
+    self.data=parseCSVFiles(csvmap)
+    print self.data
 
-    if len(globtemplates) == 0 and len(rowtemplates):
-      raise ConfigurationError("No template files found in specified path(s)")
+    # build up template classes
+    self.rowtmpls={}
+    self.globtmpls={}
+    for (tmpl, paths) in ((self.rowtmpls, rowtmpls), (self.globtmpls, globtmpls)):
+      # If path is a directory, add it to sys.path. 
+      for p in paths:
+        for (key, f) in mapfiles(collectfiles(p,["tmpl","py"])):
+          Conficat.checkfilemap(tmpl, key, p)
+          tmpl[key]=f
 
+  def checkfilemap(map, key, path):
+    """
+    Check a file key against a map (e.g. csvmap, tmplmap, etc). Raises a
+    ConfigurationError if something is wrong with the key (duplicate, invalid)
+    """
+    if key==None or key=="":
+      raise ConfigurationError("Invalid key %s for path %s", (key, path))
+    if map.has_key(key):
+      raise ConfigurationError("Duplicated key %s for path %s", (key, path))
+
+  checkfilemap=staticmethod(checkfilemap)
+  
   def run(self):
     pass

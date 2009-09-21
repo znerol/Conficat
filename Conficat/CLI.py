@@ -59,10 +59,25 @@ Row templates:
 
     if len(opts.tcols) == 0:
       opts.tcols.append("template")
+    
+    # split out arguments with key= prefix
+    csvpaths = []
+    csvmap = {}
+    for arg in args[1:]:
+      try:
+        (key,path)=arg.split("=",1)
+        Conficat.checkfilemap(csvmap, key, path)
+        csvmap[key]=path
+      except ConfigurationError,err:
+        parser.error(err)
+      except ValueError:
+        # we get here if python is unable to unpack enough elements from split
+        csvpaths.append(arg)
 
     try:
       ccat=Conficat(
-          csvpaths  = args[1:],
+          csvpaths  = csvpaths,
+          csvmap    = csvmap,
           globtmpls = opts.gtmpl,
           rowtmpls  = opts.rtmpl,
           tmplcols  = opts.tcols,
