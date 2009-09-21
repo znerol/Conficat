@@ -8,9 +8,8 @@ __version__=  '0.1'
 import os
 import re
 import sys
-from Util import loadCSVPath, collectfiles, mapfiles
+from Util import loadCSVPath, autoStripParams
 from TemplateRegistry import TemplateRegistry
-from ConfigUtil import checkfilemap, collectuniquefiles
 from ConfigError import ConfigError
 
 class Config(object):
@@ -23,10 +22,8 @@ class Config(object):
     self.rowtmpls=TemplateRegistry()
 
   def addCSVPath(self, path, key=None):
-    if key==None:
-      loadCSVPath(path,self.data)
-    else:
-      loadCSVPath(path,self.data,prefix=[key],strip=1)
+    kwa=autoStripParams(path, key)
+    loadCSVPath(path, self.data, **kwa)
 
   def addGlobalTemplatePath(self,path):
     self.globtmpls.addPath(path)
@@ -57,15 +54,3 @@ class Config(object):
 
   def validate(self):
     pass
-
-  def checkfilemap(map, key, path):
-    """
-    Check a file key against a map (e.g. csvmap, tmplmap, etc). Raises a
-    ConfigError if something is wrong with the key (duplicate, invalid)
-    """
-    if key==None or not re.match(r'^[a-zA-Z0-9_]+$', key):
-      raise ConfigError("Invalid key %s for path %s", (key, path))
-    if key in map:
-      raise ConfigError("Duplicated key %s for path %s", (key, path))
-
-  checkfilemap=staticmethod(checkfilemap)

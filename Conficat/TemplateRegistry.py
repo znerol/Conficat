@@ -1,6 +1,4 @@
-from ConfigUtil import collectuniquefiles
 from ConfigError import ConfigError
-
 
 class TemplateRegistry(object):
 
@@ -15,7 +13,8 @@ class TemplateRegistry(object):
   def __getitem__(self):
     pass
 
-  def addPath(self, path):
-    for (f, base, ext) in collectuniquefiles(self.templates.keys(), path,
-        ["tmpl","py"]):
-      pass
+  def addPath(self, path, data, strip=0, prefix=[]):
+    tmplext=(lambda p: os.path.basename(p).split(".")[-1].lower() in ("tmpl","py"))
+    for f in findfiles(path,tmplext):
+      components=prefix+pathexplode(f)[strip:-1]
+      key=str.join(".",components)

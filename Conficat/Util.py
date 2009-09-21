@@ -10,41 +10,6 @@ import os
 import re
 from stat import *
 
-def mapfiles(files):
-  """
-  Generate a dictionary containing key-value pairs where the key is derived 
-  from the first word of the basename from the path in the value part.
-  E.g. some/file/there.txt: there -> some/file/there.txt
-  """
-  for f in files:
-    # generate key and yield key-value pair
-    (base, ext) = os.path.basename(f).split(".")
-    yield(f, base, ext)
-
-def collectfiles(path, extensions=None):
-  """
-  Generate a list of files from a path (file and directory) recursively. Will
-  throw OSError if a file or path is not accessible.
-  """
-  assert(isinstance(path,str))
-  assert(isinstance(extensions,(type(None),list)))
-  
-  path = os.path.normpath(path)
-  if S_ISDIR(os.stat(path)[ST_MODE]):
-    for f in os.listdir(path):
-      for p in collectfiles(os.path.join(path, f), extensions):
-        yield p
-  else:
-    if extensions == None:
-      yield path
-      return
-    try:
-      ext = path.rsplit(".",1)[1]
-      if ext in extensions:
-        yield path
-    except IndexError:
-      pass
-
 def findfiles(path, testfunc=None, recurse=True):
   """
   recurse thru directories until the optional depth.
@@ -113,3 +78,19 @@ def loadCSVPath(path,data,strip=0,prefix=[],*args,**kwds):
         level[parts[-1]]=val
 
       leaf[components[-1]].append(newrow)
+
+def autoStripParams(path, rename=None):
+  """
+  automatically create 'strip' and 'prefix' parameters by removing all leading path
+  components but the last one and applying 'key' to 'prefix' if requested.
+  """
+  kwa={}
+  strip=len(os.path.normpath(path).lstrip("/.").split(os.path.sep))-1
+
+  if rename!=None:
+    kwa['prefix']=[rename]
+    strip=strip+1
+
+  kwa['strip']=strip
+  return kwa
+
