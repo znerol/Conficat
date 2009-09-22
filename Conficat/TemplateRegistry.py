@@ -81,6 +81,7 @@ class TemplateRegistry(object):
       # construct key from filename with path seperators replaced by dots and
       # file extension striped
       (base, ext) = f.rsplit(".",1)
+      base=base.lstrip("/.")
       key = str.join(".", prefix + base.split(os.path.sep)[strip:])
       if self.templates.has_key(key):
         raise ConfigError("%s: duplicate template entry for key %s" % (path,

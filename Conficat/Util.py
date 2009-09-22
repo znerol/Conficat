@@ -39,6 +39,7 @@ def loadCSVPath(path,data,strip=0,prefix=[],*args,**kwds):
   csvext=(lambda p: re.match(r'.+\.csv$',p.lower()) != None)
   for f in findfiles(path,csvext):
     (base, ignored_ext) = f.rsplit(".", 1)
+    base=base.lstrip("/.")
     components=prefix+base.split(os.path.sep)[strip:]
     leaf=data
 
