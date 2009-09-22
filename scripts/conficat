@@ -5,122 +5,12 @@ Generate configuration files from CSV tables and Cheetah templates.
 __author__ =  'Lorenz Schori'
 __version__=  '0.1'
 
-import os
 import sys
-import re
-from Cheetah.Template import Template
-from Cheetah.ImportHooks import install as cheetah_import_install
 from Conficat.CLI import CLI
 
-def prepareCheetahEnv(tmpldir):
-  """
-  append the template directory to python path and tell cheetah to compile and
-  import referenced templates automatically.
-  """
-  sys.path.extend(tmpldir)
-  cheetah_import_install()
-
-def sanitizeRelativePath(rpath):
-  """
-  sanitize and validate relative path
-  """
-  p = os.path.normpath(rpath)
-  if p=="":
-    raise Exception("Empty relative path")
-  if p[0:2]=="..":
-    raise Exception("Reference to enclosing directory (..) not allowed in relative path")
-  if p[0]==os.path.sep:
-    # FIXME: check for first path character on windows. drive letter?
-    raise Exception("Relative path required. \"%s\" not allowed as first character" % os.path.sep)
-  return p
-
-def applyCSVTemplates(data,tmpldir,outdir,tmplcol="template"):
-  """
-  loop thru all rows of every datafile in the data dictionary. if the row
-  contains a "template" column a corresponding cheetah template will be called
-  with the values of the current row in the "row" and the whole data dictionary
-  as in the "data" variable.
- 
-  if the template has a function named outfile the generated contents will be
-  stored into the path returned by a call to outfile.
-  """  
-  # loop thru datafiles and look for template columns
-  for df in data.itervalues():
-    for row in df:
-      if not row.has_key(tmplcol): continue
-
-      # load template
-      # FIXME: error handling
-      namespaces=[{'row':row,'data':data}]
-      tname=sanitizeRelativePath(row[tmplcol])
-      tpath="%s.tmpl" % os.path.join(tmpldir,tname)
-      if os.path.exists(tpath):
-        # use cheetah template file
-        tmpl=Template(file=tpath,namespaces=namespaces)
-      else:
-        # try to load and execute pure python template
-        tmodname = tname.replace(os.path.sep,".")
-        tclsname = tname.rsplit(os.path.sep,1)[0]
-        try:
-          exec "from %s import %s as tcls" % (tmodname,tclsname)
-          tmpl = tcls(namespaces=namespaces)
-        except ImportError:
-          raise
-
-      # check for outfile function in template
-      try:
-        oname=sanitizeRelativePath(tmpl.outfile())
-        opath=os.path.join(outdir,oname)
-      except AttributeError:
-        opath=None
-
-      # prepare path
-      if opath:
-        # create enclosing directory directory
-        odir = os.path.dirname(opath)
-        if not os.path.exists(odir):
-          os.makedirs(odir)
-
-        # backup existing file
-        if os.path.exists(opath):
-          os.rename(opath,"%s.bak" % opath)
-
-        # write stuff to file
-        fd = open(opath,"w")
-        fd.write(str(tmpl))
-        fd.close()
-      else:
-        print str(tmpl)
-
 def main():
-  
   ccat = CLI.parse(sys.argv)
   exit(ccat.run())
-
-  # check for nested/overlapping directories
-  exit(0)
-
-  # check tmpl and out arguments
-  tmpldir=os.path.normpath(opts.tmpldir)
-  outdir=os.path.normpath(opts.outdir)
-  if outdir==tmpldir:
-    parser.error("--out and --tmpl must not be the same")
-
-  # if we have a common prefix the directories are nested unless the two
-  # directories have the same dirname.
-  cpfx=os.path.commonprefix([tmpldir,outdir])
-  if cpfx in (tmpldir, outdir) and \
-      os.path.dirname(tmpldir) != os.path.dirname(outdir):
-    parser.error("--out and --tmpl must not be nested")
-
-  # prepare cheetah 
-  prepareCheetahEnv(tmpldir=[opts.tmpldir])
-
-  # loop thru arguments (csv files) and build up data dictionary
-  data = parseCSVFiles(args)
-
-  # apply templates to rows in the csv files
-  applyCSVTemplates(data=data,tmpldir=opts.tmpldir,outdir=opts.outdir)
 
 if __name__ == "__main__":
     main()
