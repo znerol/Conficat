@@ -11,6 +11,7 @@ import sys
 from Util import loadCSVPath, autoStripCSVParams, autoStripTemplateParams
 from TemplateRegistry import TemplateRegistry
 from ConfigError import ConfigError
+from Cheetah.ImportHooks import install as cheetah_import_install
 
 class Config(object):
   """Conficat configuration class. Refer to CLI.py for an example"""
@@ -20,6 +21,9 @@ class Config(object):
     self.data={}
     self.globtmpls=TemplateRegistry()
     self.rowtmpls=TemplateRegistry()
+
+    # make sure cheetah imports dependant classes automatically
+    cheetah_import_install()
 
   def addCSVPath(self, path, key=None):
     """

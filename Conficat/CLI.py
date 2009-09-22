@@ -6,6 +6,8 @@ __author__ =  'Lorenz Schori'
 __version__=  '0.1'
 
 import os
+import sys
+import logging
 from stat import *
 from optparse import OptionParser, OptionGroup
 from Config import Config
@@ -37,6 +39,9 @@ Row templates:
     """
     parser = OptionParser(version=version,usage=usage)
 
+    parser.add_option("-d", "--debug", dest="dlevel", default=logging.DEBUG,
+      help="Set logging level", metavar="LEVEL")
+
     parser.add_option("-g", "--global", dest="gtmpl", action="append",
       help="Call global template from FILE or every template in DIR. This"
            " option may be specified multiple times.",
@@ -57,7 +62,15 @@ Row templates:
       help="Write generated files of templates calling the \"outfile\" function"
            " to DIR.")
 
+    # parse arguments
     (opts, args) = parser.parse_args(args=argv)
+
+    # setup logging and general exception handler
+    logging.basicConfig(
+        level=opts.dlevel,
+        format=logging.BASIC_FORMAT,
+        stream=sys.stdout
+    )
 
     if len(opts.tcols) == 0:
       opts.tcols.append("template")

@@ -4,19 +4,22 @@ import sys
 from ConfigError import ConfigError
 from Util import findfiles, pathexplode
 from Cheetah.Template import Template
+import logging
 
 class TemplateRegistry(object):
   """
   The TemplateRegistry objects are responsible to load Cheetah and pure python
   templates from files and store them internally for later reference.
   """
+
   def __init__(self):
+    self.logger=logging.getLogger("tmpl.reg")
     super(TemplateRegistry, self).__init__()
     self.templates={}
 
   def __iter__(self):
-    for t in self.templates.values():
-      yield t
+    for (n, t) in self.templates.iteritems():
+      yield (n, t)
 
   def __getitem__(self, key):
     return self.templates[key]
@@ -58,6 +61,7 @@ class TemplateRegistry(object):
     if os.path.isfile(path):
       basedir=os.path.dirname(path)
     sys.path.append(basedir)
+    self.logger.debug("basedir: %s" % basedir)
 
     # filter for tmpl and py extensions
     for f in findfiles(path,TemplateRegistry.__template_extension):
@@ -71,21 +75,23 @@ class TemplateRegistry(object):
 
       # try to load template class
       ext=f.split(".")[-1].lower()
+      self.logger.info("attempting to load template: %s" % f)
       if ext=="tmpl":
         tcls = Template.compile(file=f)
       else: 
         try:
           tcls = self.__load_py(f,basepath=basedir)
         except ImportError,err:
-          # FIXWE: warn
+          self.logger.warn("failed to load template: %s" % f)
           continue
 
       if not issubclass(tcls,Template):
-        # FIXME: warn
+        self.logger.warn("no template class found in: %s" % f)
         continue
       
       # store template class into templates dictionary
       self.templates[key] = tcls
+      self.logger.info("successfully loaded template: %s" % f)
 
     # remove path 
     sys.path.remove(basedir)
