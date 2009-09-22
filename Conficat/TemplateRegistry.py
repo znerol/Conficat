@@ -69,13 +69,19 @@ class TemplateRegistry(object):
       if ext=="tmpl":
         tcls = Template.compile(file=f)
       else: 
-        tcls = self.__load_py(f,basepath=basedir)
+        try:
+          tcls = self.__load_py(f,basepath=basedir)
+        except ImportError,err:
+          # FIXWE: warn
+          continue
 
-      if not (issubclass(tcls,Template)):
-        ConfigError("%s: not a cheetah template" % f)
-
-      # store template class into templates dictionary
-      self.templates[key] = tcls
+      try:
+        if issubclass(tcls,Template):
+          # store template class into templates dictionary
+          self.templates[key] = tcls
+      except:
+        # FIXME: check for non-fatal exception, warn in that case and continue
+        raise
 
     # remove path 
     sys.path.remove(basedir)

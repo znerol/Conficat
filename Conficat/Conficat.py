@@ -22,9 +22,9 @@ class Conficat(object):
     is written to the file / directory configured in __init__
     """
     # global templates
-    for (tname, t) in self.config.globtmpls:
-      t.apply(self.config.outfile, self.config.outdir,
-          namespaces={'data':self.config.data})
+    for tcls in self.config.globtmpls:
+      t=tcls(namespaces={'data':self.config.data})
+      print t
 
     # row templates
     for (key, rows) in self.config.data.iteritems():
