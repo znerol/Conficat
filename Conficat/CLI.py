@@ -81,7 +81,7 @@ Row templates:
       for path in opts.gtmpl:
         config.addGlobalTemplatePath(path)
 
-      for path in opts.gtmpl:
+      for path in opts.rtmpl:
         config.addRowTemplatePath(path)
 
       config.setTemplateColumns(opts.tcols)
