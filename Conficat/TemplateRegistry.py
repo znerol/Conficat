@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+"""
+Conficat template registry module
+"""
+
 import re
 import os
 import sys
@@ -13,8 +18,8 @@ class TemplateRegistry(object):
   """
 
   def __init__(self):
-    self.logger=logging.getLogger("tmpl.reg")
     super(TemplateRegistry, self).__init__()
+    self.logger=logging.getLogger("ccat.tmpl.reg")
     self.templates={}
 
   def __iter__(self):
@@ -28,6 +33,9 @@ class TemplateRegistry(object):
     """
     load a class from a python file
     """
+    self.logger.debug("constructing py template from file %s" % filename)
+    self.logger.debug("  cls: %s" % cls)
+    self.logger.debug("  basepath: %s" % basepath)
     # construct module path from basepath and filename
     pfx = os.path.commonprefix([filename, basepath])
     modpath = filename[len(pfx):]
@@ -41,11 +49,16 @@ class TemplateRegistry(object):
     if cls == None:
       cls = components[-1]
 
+    self.logger.debug("  trying to import %s from %s" % (cls,modname))
     # try to load the class and return
     exec "from %s import %s as tcls" % (modname, cls)
+    self.logger.debug("successfully loaded py template from %s" % f)
     return tcls
 
   def __template_extension(path):
+    """
+    Filter for python and cheetah templates
+    """
     if os.path.basename(path) == "__init__.py":
       return False
     return re.match(r'.+\.(py|tmpl)$',path.lower()) != None

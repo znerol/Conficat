@@ -14,7 +14,7 @@ class Conficat(object):
   def __init__(self, config):
     # check parameters
     assert(isinstance(config, Config))
-    self.logger=logging.getLogger("ccat.run")
+    self.logger=logging.getLogger("ccat.main")
     self.config = config
 
 
