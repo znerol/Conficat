@@ -8,7 +8,7 @@ __version__=  '0.1'
 import os
 import re
 import sys
-from Util import loadCSVPath, autoStripParams
+from Util import loadCSVPath, autoStripCSVParams, autoStripTemplateParams
 from TemplateRegistry import TemplateRegistry
 from ConfigError import ConfigError
 
@@ -22,21 +22,36 @@ class Config(object):
     self.rowtmpls=TemplateRegistry()
 
   def addCSVPath(self, path, key=None):
-    kwa=autoStripParams(path, key)
+    """
+    Add a file or directory containing tabular data in CSV format
+    """
+    kwa=autoStripCSVParams(path, key)
     loadCSVPath(path, self.data, **kwa)
 
   def addGlobalTemplatePath(self,path):
-    self.globtmpls.addPath(path)
+    """
+    Add a file or directory path containing global templates
+    """
+    kwa=autoStripTemplateParams(path)
+    self.globtmpls.addPath(path, **kwa)
 
   def addRowTemplatePath(self,path):
-    self.rowtmpls.addPath(path)
+    """
+    Add a file or directory path containing row templates
+    """
+    kwa=autoStripTemplateParams(path)
+    self.rowtmpls.addPath(path, **kwa)
 
   def setTemplateColumns(self,tcols=[]):
+    """
+    Set the names of the columns which may contain a reference to a row
+    template
+    """
     self.tmplcols = tcols
 
   def setOutputFile(self,outf):
     """
-    setup either stdout or open a file as a destination for template results
+    Setup either stdout or open a file as a destination for template results
     """
     if outf=="-":
       self.outfile=sys.stdout
@@ -45,7 +60,7 @@ class Config(object):
 
   def setOutputDir(self,outd):
     """
-    specify the directory where additional files created via the outfile def in
+    Specify the directory where additional files created via the outfile def in
     templates should be placed.
     """
     if not os.path.isdir(outd):
@@ -53,4 +68,8 @@ class Config(object):
     self.outdir=os.path.normpath(outd)
 
   def validate(self):
+    """
+    Validate the configuration
+    """
+    # FIXME
     pass

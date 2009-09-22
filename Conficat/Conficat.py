@@ -30,6 +30,7 @@ class Conficat(object):
     for (key, rows) in self.config.data.iteritems():
       for row in rows:
         for tmplcol in filter(lambda x: x in self.config.tmplcols, row.keys()):
-          t=self.config.rowtmpls[row[tmplcol]]
-          t.apply(self.config.outfile, self.config.outdir,
-              namespaces={'data':self.config.data, 'row':row})
+          tcls=self.config.rowtmpls[row[tmplcol]]
+          t=tcls(namespaces={'data':self.config.data, 'row':row})
+          # FIXME: handle output
+          print t

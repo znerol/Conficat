@@ -79,10 +79,10 @@ def loadCSVPath(path,data,strip=0,prefix=[],*args,**kwds):
 
       leaf[components[-1]].append(newrow)
 
-def autoStripParams(path, rename=None):
+def autoStripCSVParams(path, rename=None):
   """
-  automatically create 'strip' and 'prefix' parameters by removing all leading path
-  components but the last one and applying 'key' to 'prefix' if requested.
+  automatically create 'strip' and 'prefix' parameters by removing all leading
+  path components but the last one and applying 'key' to 'prefix' if requested.
   """
   kwa={}
   strip=len(os.path.normpath(path).lstrip("/.").split(os.path.sep))-1
@@ -90,6 +90,23 @@ def autoStripParams(path, rename=None):
   if rename!=None:
     kwa['prefix']=[rename]
     strip=strip+1
+
+  kwa['strip']=strip
+  return kwa
+
+def autoStripTemplateParams(path, prefix=None):
+  """
+  automatically create 'strip' and 'prefix' parameters by removing all leading
+  path components for directories and all but the last one for files.
+  """
+  kwa={}
+  strip=len(os.path.normpath(path).lstrip("/.").split(os.path.sep))-1
+
+  if os.path.isdir(path):
+    strip=strip+1
+
+  if prefix!=None:
+    kwa['prefix']=[prefix]
 
   kwa['strip']=strip
   return kwa
