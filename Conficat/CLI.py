@@ -21,7 +21,6 @@ class CLI(object):
     self.loglevel=self.loglevel+amount
 
   def parse(self,argv):
-    version = "conficat %s" % __version__
     usage = """%prog [options] [[key=]file.cvs|dir]...
 
 CSV data files:
@@ -42,7 +41,7 @@ Row templates:
   called with the "$data"- and additionally a "$row" placeholder populated
   with the values from the current row.
     """
-    parser = OptionParser(version=version,usage=usage)
+    parser = OptionParser(usage=usage)
 
     parser.add_option("-v", "--verbose", action='callback',
       callback=self.opt_loglevel_incr, callback_args=(-10,),

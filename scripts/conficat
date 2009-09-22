@@ -2,8 +2,6 @@
 """
 Generate configuration files from CSV tables and Cheetah templates.
 """
-__author__ =  'Lorenz Schori'
-__version__=  '0.1'
 
 import sys
 from Conficat.CLI import CLI
