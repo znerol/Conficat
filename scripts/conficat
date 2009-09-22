@@ -9,7 +9,7 @@ import sys
 from Conficat.CLI import CLI
 
 def main():
-  ccat = CLI.parse(sys.argv)
+  ccat = CLI().parse(sys.argv)
   exit(ccat.run())
 
 if __name__ == "__main__":

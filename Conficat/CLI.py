@@ -14,8 +14,15 @@ from Config import Config
 from ConfigError import ConfigError
 from Conficat import Conficat
 
+
 class CLI(object):
-  def parse(cls,argv):
+  def __init__(self):
+    self.loglevel = logging.WARN
+
+  def opt_loglevel_incr(self, option, opt_str, value, parser, amount):
+    self.loglevel=self.loglevel+amount
+
+  def parse(self,argv):
     version = "conficat %s" % __version__
     usage = """%prog [options] [[key=]file.cvs|dir]...
 
@@ -39,8 +46,13 @@ Row templates:
     """
     parser = OptionParser(version=version,usage=usage)
 
-    parser.add_option("-d", "--debug", dest="dlevel", default=logging.DEBUG,
-      help="Set logging level", metavar="LEVEL")
+    parser.add_option("-v", "--verbose", action='callback',
+      callback=self.opt_loglevel_incr, callback_args=(-10,),
+      help="Increase loglevel. -vv for all debug messages.")
+
+    parser.add_option("-q", "--quiet", action='callback',
+      callback=self.opt_loglevel_incr, callback_args=(+10,),
+      help="Decrease loglevel. -qq for complete silence.")
 
     parser.add_option("-g", "--global", dest="gtmpl", action="append",
       help="Call global template from FILE or every template in DIR. This"
@@ -65,9 +77,11 @@ Row templates:
     # parse arguments
     (opts, args) = parser.parse_args(args=argv)
 
+    if self.loglevel < logging.DEBUG: self.loglevel=logging.DEBUG
+    if self.loglevel > logging.FATAL: self.loglevel=logging.FATAL
     # setup logging and general exception handler
     logging.basicConfig(
-        level=opts.dlevel,
+        level=self.loglevel,
         format=logging.BASIC_FORMAT,
         stream=sys.stdout
     )
@@ -110,5 +124,3 @@ Row templates:
       parser.error(err)
 
     return ccat
-
-  parse = classmethod(parse)
