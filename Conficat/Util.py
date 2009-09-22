@@ -13,7 +13,7 @@ def findfiles(path, testfunc=None, recurse=True):
   recurse thru directories until the optional depth.
   """
   assert(isinstance(path,str))
-  assert(callable(testfunc))
+  assert(testfunc==None or callable(testfunc))
   
   path=os.path.normpath(path)
   if S_ISDIR(os.stat(path)[ST_MODE]):
@@ -27,17 +27,6 @@ def findfiles(path, testfunc=None, recurse=True):
   elif testfunc==None or testfunc(path):
     yield path
 
-def pathexplode(path):
-  """
-  split file path into components.
-  """
-  # remove leading dots and slashes
-  base = path.lstrip("/.",)
-  # split basename into base ext. This will throw a ValueError if the file
-  # does not have an extension or there is more than one dot
-  (base, ext) = base.split(".")
-  return base.split(os.path.sep) + [ext]
-
 def loadCSVPath(path,data,strip=0,prefix=[],*args,**kwds):
   """
   Load CSV data from the path which is either a file or a whole directory.
@@ -49,7 +38,8 @@ def loadCSVPath(path,data,strip=0,prefix=[],*args,**kwds):
 
   csvext=(lambda p: re.match(r'.+\.csv$',p.lower()) != None)
   for f in findfiles(path,csvext):
-    components=prefix+pathexplode(f)[strip:-1]
+    (base, ignored_ext) = f.rsplit(".", 1)
+    components=prefix+base.split(os.path.sep)[strip:]
     leaf=data
 
     # descend to leaf

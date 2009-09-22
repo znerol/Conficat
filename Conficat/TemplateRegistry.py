@@ -7,7 +7,7 @@ import re
 import os
 import sys
 from ConfigError import ConfigError
-from Util import findfiles, pathexplode
+from Util import findfiles
 from Cheetah.Template import Template
 import logging
 
@@ -80,16 +80,15 @@ class TemplateRegistry(object):
     for f in findfiles(path,TemplateRegistry.__template_extension):
       # construct key from filename with path seperators replaced by dots and
       # file extension striped
-      components=prefix+pathexplode(f)[strip:-1]
-      key=str.join(".",components)
+      (base, ext) = f.rsplit(".",1)
+      key = str.join(".", prefix + base.split(os.path.sep)[strip:])
       if self.templates.has_key(key):
         raise ConfigError("%s: duplicate template entry for key %s" % (path,
           key))
 
       # try to load template class
-      ext=f.split(".")[-1].lower()
       self.logger.info("attempting to load template: %s" % f)
-      if ext=="tmpl":
+      if ext.lower() == "tmpl":
         tcls = Template.compile(file=f)
       else: 
         try:
