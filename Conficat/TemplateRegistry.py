@@ -42,6 +42,13 @@ class TemplateRegistry(object):
     exec "from %s import %s as tcls" % (modname, cls)
     return tcls
 
+  def __template_extension(path):
+    if os.path.basename(path) == "__init__.py":
+      return False
+    return re.match(r'.+\.(py|tmpl)$',path.lower()) != None
+
+  __template_extension = staticmethod(__template_extension)
+
   def addPath(self, path, strip=0, prefix=[]):
     """
     Recursively add cheetah and python templates from path.
@@ -50,12 +57,10 @@ class TemplateRegistry(object):
     basedir=os.path.normpath(path)
     if os.path.isfile(path):
       basedir=os.path.dirname(path)
-    print basedir
     sys.path.append(basedir)
 
     # filter for tmpl and py extensions
-    tmplext=(lambda p: re.match(r'.+\.(py|tmpl)$',p.lower()) != None)
-    for f in findfiles(path,tmplext):
+    for f in findfiles(path,TemplateRegistry.__template_extension):
       # construct key from filename with path seperators replaced by dots and
       # file extension striped
       components=prefix+pathexplode(f)[strip:-1]
@@ -75,13 +80,12 @@ class TemplateRegistry(object):
           # FIXWE: warn
           continue
 
-      try:
-        if issubclass(tcls,Template):
-          # store template class into templates dictionary
-          self.templates[key] = tcls
-      except:
-        # FIXME: check for non-fatal exception, warn in that case and continue
-        raise
+      if not issubclass(tcls,Template):
+        # FIXME: warn
+        continue
+      
+      # store template class into templates dictionary
+      self.templates[key] = tcls
 
     # remove path 
     sys.path.remove(basedir)

@@ -87,6 +87,9 @@ def autoStripCSVParams(path, rename=None):
   kwa={}
   strip=len(os.path.normpath(path).lstrip("/.").split(os.path.sep))-1
 
+  if os.path.isdir(path):
+    strip=strip+1
+
   if rename!=None:
     kwa['prefix']=[rename]
     strip=strip+1
