@@ -2,8 +2,6 @@
 """
 Utility functions for conficat
 """
-__author__ =  'Lorenz Schori'
-__version__=  '0.1'
 
 import csv
 import os

@@ -2,8 +2,6 @@
 """
 Conficat main class
 """
-__author__ =  'Lorenz Schori'
-__version__=  '0.1'
 
 import logging
 from Config import Config

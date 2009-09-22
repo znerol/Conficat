@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 """
-Conficat main class
+Conficat internal configuration class
 """
-__author__ =  'Lorenz Schori'
-__version__=  '0.1'
 
 import os
 import re

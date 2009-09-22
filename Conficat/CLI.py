@@ -2,8 +2,6 @@
 """
 Conficat command line interface
 """
-__author__ =  'Lorenz Schori'
-__version__=  '0.1'
 
 import os
 import sys
