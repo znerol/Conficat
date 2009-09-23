@@ -79,6 +79,15 @@ class TemplateRegistry(object):
     sys.path.append(basedir)
     self.logger.debug("basedir: %s" % basedir)
 
+    # Automatically strip everything off from up to the last path component if
+    # specified otherwise
+    if strip == 'auto':
+      strip = len(os.path.normpath(path).lstrip("/.").split(os.path.sep))-1
+      # Also remove the last component if this is a directory, or if a prefix was
+      # specified.
+      if os.path.isdir(path) or prefix != []:
+        strip = strip+1
+
     gotone=False
 
     # filter for tmpl and py extensions

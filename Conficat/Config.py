@@ -8,7 +8,6 @@ import re
 import sys
 import logging
 from Cheetah.ImportHooks import install as cheetah_import_install
-from Util import autoStripTemplateParams
 from TemplateRegistry import TemplateRegistry
 from CSVDataSource import CSVDataSource
 from ConfigError import ConfigError
@@ -37,16 +36,14 @@ class Config(object):
     Add a file or directory path containing global templates
     """
     self.logger.info("adding global template(s) in \"%s\"" % path)
-    kwa=autoStripTemplateParams(path)
-    self.globtmpls.addPath(path, **kwa)
+    self.globtmpls.addPath(path)
 
   def addRowTemplatePath(self,path):
     """
     Add a file or directory path containing row templates
     """
     self.logger.info("adding row template(s) in \"%s\"" % path)
-    kwa=autoStripTemplateParams(path)
-    self.rowtmpls.addPath(path, **kwa)
+    self.rowtmpls.addPath(path)
 
   def setTemplateColumns(self,tcols=[]):
     """

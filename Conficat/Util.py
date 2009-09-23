@@ -45,21 +45,3 @@ def checkrelpath(path):
     raise ValidationError("Not a relative path")
 
   return p
-
-def autoStripTemplateParams(path, prefix=None):
-  """
-  automatically create 'strip' and 'prefix' parameters by removing all leading
-  path components for directories and all but the last one for files.
-  """
-  kwa={}
-  strip=len(os.path.normpath(path).lstrip("/.").split(os.path.sep))-1
-
-  if os.path.isdir(path):
-    strip=strip+1
-
-  if prefix!=None:
-    kwa['prefix']=[prefix]
-
-  kwa['strip']=strip
-  return kwa
-
