@@ -26,6 +26,9 @@ class TemplateRegistry(object):
     for (n, t) in self.templates.iteritems():
       yield (n, t)
 
+  def __len__(self):
+    return len(self.templates)
+
   def __getitem__(self, key):
     return self.templates[key]
 
