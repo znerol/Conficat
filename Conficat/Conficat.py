@@ -29,7 +29,7 @@ class Conficat(object):
       self.logger.debug("successfully applied global template %s", tname)
 
     # row templates
-    for (key, rows) in self.config.data.iteritems():
+    for (key, rows) in self.config.data:
       for row in rows:
         for tmplcol in filter(lambda x: x in self.config.tmplcols, row.keys()):
           self.logger.debug("attempting to apply row template %s", tmplcol)

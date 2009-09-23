@@ -5,11 +5,11 @@ Test cases for conficat utility functions
 
 import unittest
 import os
-from Conficat.Util import loadCSVPath, autoStripCSVParams
+from Conficat.CSVDataSource import CSVDataSource
 from tempfile import mkstemp, mkdtemp
 
 class LoadCSVPathTestCase(unittest.TestCase):
-  """ Test cases for loadCSVPath utility function"""
+  """ Test cases for CSVDataSource class"""
 
   csvrec="ID,Name\n1,Marvin\n"
   csvdict=dict(ID="1",Name="Marvin")
@@ -22,6 +22,8 @@ class LoadCSVPathTestCase(unittest.TestCase):
     f.write(LoadCSVPathTestCase.csvrec)
     f.close()
 
+    self.ds = CSVDataSource()
+
   def tearDown(self):
     os.unlink(self.csvfile)
     os.removedirs(self.tmpdir)
@@ -29,12 +31,10 @@ class LoadCSVPathTestCase(unittest.TestCase):
   def testValidCSVFile(self):
     """test the structure and content of the resulting dictionary"""
 
-    result1 = {}
-    loadCSVPath(self.csvfile,result1,**autoStripCSVParams(self.csvfile))
-    self.assertTrue(isinstance(result1,dict))
-    self.assertTrue(result1.has_key(LoadCSVPathTestCase.fkey1))
+    self.ds.loadFromPath(self.csvfile)
+    self.assertTrue(LoadCSVPathTestCase.fkey1 in self.ds)
 
-    fkey1list=result1[LoadCSVPathTestCase.fkey1]
+    fkey1list=self.ds[LoadCSVPathTestCase.fkey1]
     self.assertTrue(isinstance(fkey1list,list))
     self.assertTrue(len(fkey1list)==1)
 

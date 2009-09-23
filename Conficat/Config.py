@@ -8,8 +8,9 @@ import re
 import sys
 import logging
 from Cheetah.ImportHooks import install as cheetah_import_install
-from Util import loadCSVPath, autoStripCSVParams, autoStripTemplateParams
+from Util import autoStripTemplateParams
 from TemplateRegistry import TemplateRegistry
+from CSVDataSource import CSVDataSource
 from ConfigError import ConfigError
 
 class Config(object):
@@ -18,7 +19,7 @@ class Config(object):
   def __init__(self):
     super(Config, self).__init__()
     self.logger=logging.getLogger("ccat.config")
-    self.data={}
+    self.data = CSVDataSource()
     self.globtmpls=TemplateRegistry()
     self.rowtmpls=TemplateRegistry()
 
@@ -29,8 +30,7 @@ class Config(object):
     """
     Add a file or directory containing tabular data in CSV format
     """
-    kwa=autoStripCSVParams(path, key)
-    loadCSVPath(path, self.data, **kwa)
+    data.loadFromPath(path)
 
   def addGlobalTemplatePath(self,path):
     """
