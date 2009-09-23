@@ -1,5 +1,8 @@
-htpasswd: pure python conficat example
-======================================
+htpasswd: global template combined with helper function
+=======================================================
 
-This example demonstrates how to use a pure python cheetah template together
-with conficat.
+This example demonstrates the use of pure python helper functions from cheetah
+templates.
+
+Run it with the following command line (output written to stdout):
+  conficat --global gtmpl/htpasswd.tmpl passwords.csv
