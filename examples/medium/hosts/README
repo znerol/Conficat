@@ -1,0 +1,13 @@
+hosts: generate /etc/hosts for a local network
+==============================================
+
+This example demonstrates the use of row templates to generate hosts-files for
+all devices in a local network. Both of the templates define the outfile
+function returning a path dependant from the hostname column of the row to
+separate the configfiles into directories named after the hosts found in the
+CSV file.
+
+Run it with the following command line (output written to stdout):
+  conficat -r rtmpl hosts.csv -O .
+
+You'll find the generated files in ./conf

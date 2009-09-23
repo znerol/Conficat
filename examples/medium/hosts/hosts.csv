@@ -1,0 +1,6 @@
+template,ip,hostname,aliases
+ipv6,192.168.1.1,mygateway,gw.lan.example.com
+ipv6,192.168.1.2,puppetmaster,puppetmaster.lan.example.com
+ipv6,192.168.1.3,bacula,bacula.lan.example.com
+ipv4only,192.168.1.4,syslog,syslog.lan.example.com loghost loghost.lan.example.com
+ipv4only,192.168.1.33,wifi,wifi.lan.example.com

@@ -1,0 +1,6 @@
+#def outfile: conf/$row.hostname/hosts
+127.0.0.1	localhost $row.hostname
+
+#for $host in $data.hosts:
+$host.ip $host.hostname $host.aliases
+#end for
