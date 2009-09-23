@@ -7,6 +7,7 @@ import csv
 import os
 import re
 from stat import *
+from ValidationError import ValidationError
 
 def findfiles(path, testfunc=None, recurse=True):
   """
@@ -26,6 +27,24 @@ def findfiles(path, testfunc=None, recurse=True):
         yield p
   elif testfunc==None or testfunc(path):
     yield path
+
+def checkrelpath(path):
+  """
+  ensure that the path is a save relative path: no reference to enclosing dirs
+  etc.
+  """
+  assert(isinstance(path,str))
+
+  p = os.path.normpath(path)
+  if p=="":
+    raise ValidationError("Empty relative path")
+  if p[0:2]=="..":
+    raise ValidationError("Reference to enclosing directory (..) not allowed in relative path")
+  if p[0]==os.path.sep:
+    # FIXME: check for first path character on windows. drive lett
+    raise ValidationError("Not a relative path")
+
+  return p
 
 def loadCSVPath(path,data,strip=0,prefix=[],*args,**kwds):
   """
