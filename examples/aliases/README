@@ -1,0 +1,8 @@
+aliases: trivial example to generate /etc/aliases from a CSV file
+=================================================================
+
+This example demonstrates the use of a simple global cheetah template to
+generate the /etc/aliases file from a csv table
+
+Run it with the following command line (output written to stdout):
+  conficat --global aliases.tmpl aliases.csv
