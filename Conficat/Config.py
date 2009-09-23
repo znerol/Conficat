@@ -29,7 +29,7 @@ class Config(object):
     """
     Add a file or directory containing tabular data in CSV format
     """
-    data.loadFromPath(path)
+    self.data.loadFromPath(path)
 
   def addGlobalTemplatePath(self,path):
     """
