@@ -81,5 +81,22 @@ class Config(object):
     """
     Validate the configuration
     """
-    # FIXME
-    pass
+    if len(self.data) == 0:
+      self.logger.warn("No data was loaded from any csv file")
+
+    # check templates and data
+    while True:
+      # Operation with only one global template is possible
+      if len(self.globtmpls) > 0:
+        break
+
+      # Operation with some datasource and some row templates is possible
+      if len(self.data) > 0 or len(self.rowtmpls) > 0:
+        break
+
+      # Without anything we can do nothing
+      raise ConfigError("Either at least one global template and/or some data and at least one row template is required.")
+
+    # check template columns if row templates specified
+    if len(self.rowtmpls) > 0 and len(self.tmplcols):
+      raise ConfigError("Row templates specified but no template columns.")
