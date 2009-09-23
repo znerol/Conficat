@@ -79,6 +79,8 @@ class TemplateRegistry(object):
     sys.path.append(basedir)
     self.logger.debug("basedir: %s" % basedir)
 
+    gotone=False
+
     # filter for tmpl and py extensions
     for f in findfiles(path,TemplateRegistry.__template_extension):
       # construct key from filename with path seperators replaced by dots and
@@ -107,7 +109,12 @@ class TemplateRegistry(object):
       
       # store template class into templates dictionary
       self.templates[key] = tcls
+      gotone=True
       self.logger.info("successfully loaded template: %s" % f)
 
     # remove path 
     sys.path.remove(basedir)
+
+    # warn if there was no template found
+    if not gotone:
+      self.logger.warn("no templates found in path: %s" % path)
