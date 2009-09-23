@@ -98,5 +98,5 @@ class Config(object):
       raise ConfigError("Either at least one global template and/or some data and at least one row template is required.")
 
     # check template columns if row templates specified
-    if len(self.rowtmpls) > 0 and len(self.tmplcols):
+    if len(self.rowtmpls) > 0 and len(self.tmplcols) == 0:
       raise ConfigError("Row templates specified but no template columns.")
