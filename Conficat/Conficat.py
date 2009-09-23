@@ -4,7 +4,9 @@ Conficat main class
 """
 
 import logging
+import os
 from Config import Config
+from Util import checkrelpath
 
 class Conficat(object):
   """Conficat main class. Refer to CLI.py for an example"""
@@ -15,17 +17,15 @@ class Conficat(object):
     self.logger=logging.getLogger("ccat.main")
     self.config = config
 
-
-  def run(self):
+  def templates(self):
     """
-    Loop thru and apply global templates, loop thru data and apply rows. Output
-    is written to the file / directory configured in __init__
+    Generate instances of templates
     """
     # global templates
     for (tname, tcls) in self.config.globtmpls:
       self.logger.debug("attempting to apply global template %s", tname)
       t=tcls(namespaces={'data':self.config.data})
-      print t
+      yield t
       self.logger.debug("successfully applied global template %s", tname)
 
     # row templates
@@ -35,6 +35,31 @@ class Conficat(object):
           self.logger.debug("attempting to apply row template %s", tmplcol)
           tcls=self.config.rowtmpls[row[tmplcol]]
           t=tcls(namespaces={'data':self.config.data, 'row':row})
-          # FIXME: handle output
+          yield t
           self.logger.debug("successfully applied row template %s", tmplcol)
-          print t
+
+  def run(self):
+    """
+    Loop thru templates, choose output file and apply them.
+    """
+    for t in self.templates():
+      outf = self.config.outfile
+      closef = False
+      if hasattr(t, "outfile") and callable(t.outfile):
+        outpath=t.outfile()
+        outpath=checkrelpath(outpath)
+
+        # automatically create enclosing directories
+        outdir = os.path.join(self.config.outdir, os.path.dirname(outpath))
+        if not os.path.exists(outdir):
+          os.makedirs(outdir)
+
+        # open file object
+        outf = open(os.path.join(outdir,os.path.basename(outpath)), "w")
+        closef = True
+
+      # apply template and write it to the choosen file
+      outf.write(str(t))
+
+      if closef:
+        outf.close()
