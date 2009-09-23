@@ -7,6 +7,9 @@ function returning a path dependant from the hostname column of the row to
 separate the configfiles into directories named after the hosts found in the
 CSV file.
 
+There are two types of row templates: ipv4only and ipv6. The former lacks ipv6
+local loopback entries.
+
 Run it with the following command line (output written to stdout):
   conficat -r rtmpl hosts.csv -O .
 
