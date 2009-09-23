@@ -73,9 +73,9 @@ class Config(object):
     templates should be placed.
     """
     if not os.path.isdir(outd):
-      raise ConfigError("%s: Not a directory", outd)
+      raise ConfigError("%s: Not a directory" % outd)
     self.outdir=os.path.normpath(outd)
-    self.logger.info("write separate output files to directory %s")
+    self.logger.info("write separate output files to directory %s" % outd)
 
   def validate(self):
     """
