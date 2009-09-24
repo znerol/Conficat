@@ -32,6 +32,9 @@ class TemplateRegistry(object):
   def __getitem__(self, key):
     return self.templates[key]
 
+  def __contains__(self, key):
+    return self.templates.has_key(key)
+
   def __load_py(self, filename, cls=None, basepath=None):
     """
     load a class from a python file
