@@ -35,15 +35,15 @@ class Config(object):
     """
     Add a file or directory path containing global templates
     """
-    self.logger.info("adding global template(s) in \"%s\"" % path)
-    self.globtmpls.addPath(path)
+    self.logger.info("loading global template(s) in \"%s\"" % path)
+    self.globtmpls.loadFromPath(path)
 
   def addRowTemplatePath(self,path):
     """
     Add a file or directory path containing row templates
     """
-    self.logger.info("adding row template(s) in \"%s\"" % path)
-    self.rowtmpls.addPath(path)
+    self.logger.info("loading row template(s) in \"%s\"" % path)
+    self.rowtmpls.loadFromPath(path)
 
   def setTemplateColumns(self,tcols=[]):
     """

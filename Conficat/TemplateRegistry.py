@@ -68,7 +68,7 @@ class TemplateRegistry(object):
 
   __template_extension = staticmethod(__template_extension)
 
-  def addPath(self, path, strip='auto', prefix=[]):
+  def loadFromPath(self, path, strip='auto', prefix=[]):
     """
     Recursively add cheetah and python templates from path.
     """
