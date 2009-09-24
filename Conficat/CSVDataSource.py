@@ -6,12 +6,14 @@ Data Source class for CSV data
 import csv
 import os
 import re
+import logging
 from stat import *
 from ValidationError import ValidationError
 from Util import findfiles
 
 class CSVDataSource(object):
   def __init__(self):
+    self.logger = logging.getLogger("ccat.input.csv")
     self.data={}
 
   def __iter__(self):
@@ -35,6 +37,8 @@ class CSVDataSource(object):
     assert(isinstance(prefix, list))
     assert(strip == 'auto' or isinstance(strip, int))
 
+    self.logger.info("adding CSV datasource from \"%s\"" % path)
+
     # Automatically strip everything off from up to the last path component if
     # specified otherwise
     if strip == 'auto':
@@ -44,13 +48,18 @@ class CSVDataSource(object):
       if os.path.isdir(path) or prefix != []:
         strip = strip+1
 
+    self.logger.debug("CSV datasource strip: %s" % strip)
+
     # Loop thru csv files found in the dir (or just read in the file if the path
     # points to a single file)
     csvext=(lambda p: re.match(r'.+\.csv$',p.lower()) != None)
     for f in findfiles(path,csvext):
+      self.logger.debug("attemting to load CSV file: %s" % f)
       (base, ignored_ext) = f.rsplit(".", 1)
       base = base.lstrip("/.")
       components = prefix + base.split(os.path.sep)[strip:]
+
+      self.logger.debug("CSV datasource path: %s" % str.join(".", components))
 
       # descend to leaf
       leaf = self.data
@@ -77,4 +86,5 @@ class CSVDataSource(object):
           level[parts[-1]] = val
 
         leaf[components[-1]].append(newrow)
+      self.logger.debug("successfully loaded CSV file: %s" % f)
 

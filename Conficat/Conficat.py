@@ -42,6 +42,7 @@ class Conficat(object):
     """
     Loop thru templates, choose output file and apply them.
     """
+    self.logger.info("applying templates")
     for t in self.templates():
       outf = self.config.outfile
       closef = False
@@ -63,3 +64,4 @@ class Conficat(object):
 
       if closef:
         outf.close()
+    self.logger.info("successfully applied templates")

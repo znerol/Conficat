@@ -16,6 +16,7 @@ from Conficat import Conficat
 class CLI(object):
   def __init__(self):
     self.loglevel = logging.WARN
+    self.logger = logging.getLogger("ccat.cli")
 
   def opt_loglevel_incr(self, option, opt_str, value, parser, amount):
     self.loglevel=self.loglevel+amount
@@ -74,13 +75,13 @@ Row templates:
     # parse arguments
     (opts, args) = parser.parse_args(args=argv)
 
+    # setup logging
     if self.loglevel < logging.DEBUG: self.loglevel=logging.DEBUG
     if self.loglevel > logging.FATAL: self.loglevel=logging.FATAL
-    # setup logging and general exception handler
     logging.basicConfig(
         level=self.loglevel,
-        format=logging.BASIC_FORMAT,
-        stream=sys.stdout
+        format='%(levelname).1s:%(message)s',
+        stream=sys.stderr
     )
 
     if len(opts.tcols) == 0:
@@ -118,6 +119,10 @@ Row templates:
 
       ccat=Conficat(config)
     except ConfigError,err:
-      parser.error(err)
+      self.logger.error(err)
+      exit(2)
+    except:
+      self.logger.error("An unknown error occured")
+      exit(1)
 
     return ccat

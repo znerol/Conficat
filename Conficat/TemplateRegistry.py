@@ -88,6 +88,7 @@ class TemplateRegistry(object):
       if os.path.isdir(path) or prefix != []:
         strip = strip+1
 
+    self.logger.debug("template strip: %d" % strip)
     gotone=False
 
     # filter for tmpl and py extensions
@@ -100,9 +101,10 @@ class TemplateRegistry(object):
       if self.templates.has_key(key):
         raise ConfigError("%s: duplicate template entry for key %s" % (path,
           key))
+      self.logger.debug("derived template key: %s" % key)
 
       # try to load template class
-      self.logger.info("attempting to load template: %s" % f)
+      self.logger.debug("attempting to load template: %s" % f)
       if ext.lower() == "tmpl":
         tcls = Template.compile(file=f)
       else: 
@@ -119,7 +121,7 @@ class TemplateRegistry(object):
       # store template class into templates dictionary
       self.templates[key] = tcls
       gotone=True
-      self.logger.info("successfully loaded template: %s" % f)
+      self.logger.debug("successfully loaded template: %s" % f)
 
     # remove path 
     sys.path.remove(basedir)
