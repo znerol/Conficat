@@ -6,6 +6,8 @@ Conficat command line interface
 import os
 import sys
 import logging
+import textwrap
+import traceback
 from stat import *
 from optparse import OptionParser, OptionGroup
 from Config import Config
@@ -22,7 +24,7 @@ class CLI(object):
     self.loglevel=self.loglevel+amount
 
   def parse(self,argv):
-    usage = """%prog [options] [[key=]file.cvs|dir]...
+    usage = """conficat [options] [[key=]file.cvs|dir]...
 
 CSV data files:
   Conficat parses each CSV file specified on the command line and makes its
@@ -118,11 +120,25 @@ Row templates:
       config.validate()
 
       ccat=Conficat(config)
+
     except ConfigError,err:
-      self.logger.error(err)
+      self.logger.error("\n".join(textwrap.wrap(
+        str(err), 78, subsequent_indent='  ')))
+      print >> sys.stderr, "usage: " + parser.usage.split("\n")[0]
+      print >> sys.stderr, "run \"conficat --help\" for more information"
       exit(2)
+
     except:
-      self.logger.error("An unknown error occured")
+      # other exceptions: print traceback if loglevel is less than INFO, which
+      # effectively is DEBUG
+      if self.loglevel < logging.INFO:
+        traceback.print_exc(file=sys.stderr)
+
+      # print a more friendly and nicely wrapped message to stderr
+      (type, value, tb) = sys.exc_info()
+      self.logger.error("\n".join(textwrap.wrap(
+        "Caught an unhandled exception of type %s: %s" % (str(type), str(value)),
+        78, subsequent_indent='  ')))
       exit(1)
 
     return ccat
