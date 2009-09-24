@@ -37,8 +37,6 @@ class CSVDataSource(object):
     assert(isinstance(prefix, list))
     assert(strip == 'auto' or isinstance(strip, int))
 
-    self.logger.info("adding CSV datasource from \"%s\"" % path)
-
     # Automatically strip everything off from up to the last path component if
     # specified otherwise
     if strip == 'auto':
