@@ -58,7 +58,7 @@ class TemplateRegistry(object):
     self.logger.debug("  trying to import %s from %s" % (cls,modname))
     # try to load the class and return
     exec "from %s import %s as tcls" % (modname, cls)
-    self.logger.debug("successfully loaded py template from %s" % f)
+    self.logger.debug("successfully loaded py template from %s" % filename)
     return tcls
 
   def __template_extension(path):
